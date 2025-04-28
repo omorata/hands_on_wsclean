@@ -89,14 +89,14 @@ em funciona si poso OpenBlas (de slackware), però l'hauré de treure després
   export OPENBLAS_NUM_THREADS=1
 #+end_src
 
-** example of running
+** Examples
 *** basic cleaning
 stop when reaching a 3 sigma noise level
 #+begin_src
   wsclean -size 3000 3000 -scale 0.2asec -niter 30000 \
           -auto-threshold 3 \
           -mgain 0.8 -weight briggs 0 \
-          -name new_test test.ms
+          -name basic test.ms
 #+end_src
 
 *** multifrequency weighting
@@ -105,7 +105,7 @@ stop when reaching a 3 sigma noise level
           -auto-threshold 3 \
           -mgain 0.8 -weight briggs 0 \
           -channels-out 2 -join-channels -fit-spectral-pol 2 \
-          -name new_test test.ms
+          -name multifreq test.ms
 #+end_src
 
 *** automasking
@@ -114,7 +114,7 @@ stop when reaching a 3 sigma noise level
           -mgain 0.8 -weight briggs 0 \
           -auto-threshold 0.3 -auto-mask 3 \
           -channels-out 2 -join-channels -fit-spectral-pol 2 \
-          -name new_test test.ms
+          -name tautomask test.ms
 #+end_src
 
 *** snapshot imaging
@@ -135,7 +135,7 @@ stop when reaching a 3 sigma noise level
           -auto-threshold 0.3 -auto-mask 3 \
           -channels-out 2 -join-channels -fit-spectral-pol 2 \
           -pol I,V -join-polarizations \
-          -name snapshots test.ms
+          -name polmap test.ms
 #+end_src
 
 *** parallel deconvolution
