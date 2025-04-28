@@ -1,1 +1,160 @@
-handson-wsclean.org
+#+TITLE: hands-on-wsclean
+
+* Use of wsclean (Hands-on session)
+
+** relevant websites
+https://wsclean.readthedocs.io/en/latest/
+
+** installation notes
+
+*** requirements
+
+- installation instructions: https://wsclean.readthedocs.io/en/latest/installation.html
+
+- according to the instructions, we need to have:
+  - fftw (in slackware)
+  - boost (in slackware)
+  - cftisio (in slackware)
+  - gsl (in slackware)
+  - openblas (in slackware, but we need to recompile it?)
+  - hdf5
+  - casacore
+  - casacore also needs EveryBeam
+
+*** numpy
+- install numpy as local user
+
+  - pip install numpy --user
+
+*** hdf5
+- compile hdf5
+  - download: from https://www.hdfgroup.org/download-hdf5/source-code/
+- export OPENBLAS_NUM_THREADS=1
+    
+#+begin_src bash
+  tar xvf hdf5-1.14.5.tar.gz .
+  cd hdf5-1.14.5/
+  ./configure --prefix=/home/oscar/install
+  make -j 8
+  make install
+#+end_src
+
+*** openblas
+- install openblas
+#+begin_src bash
+  git clone  -b develop https://github.com/OpenMathLib/OpenBLAS.git
+  cd OpenBLAS/
+  make -j 10
+  make install PREFIX=/home/oscar/install
+
+#+end_src
+
+*** casacore
+- compile casacore
+#+begin_src bash :tangle /home/oscar/ztest/casacore.sh
+  git clone https://github.com/casacore/casacore 
+  cd casacore
+  mkdir build && cd build
+  cmake -DDATA_DIR=/home/oscar/.casa/data ..
+  time make -j 8
+  make install DESTDIR=/home/oscar/install
+#+end_src
+
+em funciona si poso OpenBlas (de slackware), però l'hauré de treure després
+
+*** EasyBeam
+- compile EasyBeam
+#+begin_src bash :tangle /home/oscar/ztest/easybeam.sh
+  git clone --recursive -j4 https://git.astron.nl/RD/EveryBeam.git
+  cd EveryBeam
+  mkdir build && cd build
+  cmake -DCMAKE_INSTALL_PREFIX=~/install -DCASACORE_ROOT_DIR=~/tmp/casacore/usr/local/ .. 
+  make install
+#+end_src
+
+*** wsclean
+
+- compile wsclean
+#+begin_src bash
+  git clone -b master https://gitlab.com/aroffringa/wsclean.git
+  cd wsclean
+  mkdir build && cd build
+  export OPENBLAS_NUM_THREADS=1
+      
+  cmake ../ -DCMAKE_PREFIX_PATH="/home/oscar/install/usr/local;/home/oscar/install/" -DCASACORE_ROOT_DIR=/home/oscar/install/usr/local/include/ -DCMAKE_INSTALL_PREFIX=/home/oscar/install
+
+  make -j 10
+  make install
+
+  export OPENBLAS_NUM_THREADS=1
+#+end_src
+
+** example of running
+*** basic cleaning
+stop when reaching a 3 sigma noise level
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 30000 \
+          -auto-threshold 3 \
+          -mgain 0.8 -weight briggs 0 \
+          -name new_test test.ms
+#+end_src
+
+*** multifrequency weighting
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 3000000 \
+          -auto-threshold 3 \
+          -mgain 0.8 -weight briggs 0 \
+          -channels-out 2 -join-channels -fit-spectral-pol 2 \
+          -name new_test test.ms
+#+end_src
+
+*** automasking
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 3000000 \
+          -mgain 0.8 -weight briggs 0 \
+          -auto-threshold 0.3 -auto-mask 3 \
+          -channels-out 2 -join-channels -fit-spectral-pol 2 \
+          -name new_test test.ms
+#+end_src
+
+*** snapshot imaging
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 3000000 \
+          -mgain 0.8 -weight briggs 0 \
+          -auto-threshold 0.3 -auto-mask 3 \
+          -channels-out 2 -join-channels -fit-spectral-pol 2 \
+          -intervals-out 4 \
+          -name snapshots test.ms
+#+end_src
+
+
+*** polarimetric deconvolution
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 3000000 \
+          -mgain 0.8 -weight briggs 0 \
+          -auto-threshold 0.3 -auto-mask 3 \
+          -channels-out 2 -join-channels -fit-spectral-pol 2 \
+          -pol I,V -join-polarizations \
+          -name snapshots test.ms
+#+end_src
+
+*** parallel deconvolution
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 3000000 \
+          -mgain 0.8 -weight briggs 0 \
+          -auto-threshold 0.3 -auto-mask 3 \
+          -channels-out 2 -join-channels -fit-spectral-pol 2 \
+          -parallel-deconvolution 512 \
+          -name new_test test.ms
+#+end_src
+
+*** parallel gridding
+#+begin_src
+  wsclean -size 3000 3000 -scale 0.2asec -niter 3000000 \
+          -mgain 0.8 -weight briggs 0 \
+          -auto-threshold 0.3 -auto-mask 3 \
+          -channels-out 2 -join-channels -fit-spectral-pol 2 \
+          -parallel-deconvolution 512 \
+          -parallel-gridding 4 \
+          -name new_test test.ms
+#+end_src
