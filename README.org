@@ -158,3 +158,31 @@ stop when reaching a 3 sigma noise level
           -parallel-gridding 4 \
           -name new_test test.ms
 #+end_src
+
+** Tests
+
+*** DGTau
+#+begin_src
+  wsclean -multiscale -mgain 0.8 \
+	-name /share/Part1/ediaz/VOLS/images/test-wsclean/DGTau_test_commonbeam -mem 100 -weight briggs 0 -no-mf-weighting \
+	-size 1000 1000 \
+	-scale 0.001asec \
+	-pol I -data-column DATA \
+	-niter 1000000 -auto-threshold 1 -auto-mask 3 -gain 0.03 \
+	-beam-shape 0.05asec 0.05asec 0deg \
+	-padding 1.3 \
+	/share/Part1/ediaz/VOLS/DGTau.Q.AB.CalPipeNRAO.Av64ch10s.PhCent.SelfCal.RRLL.ms #path of the data
+#+end_src
+
+*** ONC
+#+begin_src
+  wsclean -multiscale -mgain 0.8 \
+	-name /share/Part1/ediaz/VOLS/images/test-wsclean/ONC_test_20220701_6pointings_r0_DIRTY -mem 100 -weight briggs 0 -no-mf-weighting \
+	-size 5000 5000 \
+	-scale 0.05asec \
+	-pol I -data-column DATA \
+	-use-idg -grid-with-beam \
+	-niter 0 \
+	-padding 1.3 \
+	/share/Part1/ediaz/VOLS/images/test-wsclean/vis/22A-195.sb41668223.eb41905952.59761.608695324074_cont_shifted.ms  #path of the data
+#+end_src
